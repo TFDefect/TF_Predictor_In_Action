@@ -9,6 +9,11 @@ def load_dataset(project_path, file_type, path):
     dataset = pd.read_csv(file_path)
     return dataset[dataset['isTerraform'] == 0]
 
+def preprocess_data(dataset, features, target):
+    X = dataset[features]
+    y = dataset[target]
+    return X, y
+
 def get_project_paths(project_full_name):
     return {
         'project_path': project_full_name.replace('/', '__'),
@@ -34,7 +39,7 @@ def load_model(project_local_folder, project_model, algo, i):
     Returns:
         sklearn.BaseEstimator: Loaded model object.
     """
-    model_path = f'./saved_models/cattle-ops_terraform-aws-gitlab-runner_RF__iter_0_.joblib'
+    model_path = f'./saved_models/{project_model}_{algo}__iter_{i}_.joblib'
     return load(model_path)
 
 
@@ -50,7 +55,7 @@ def read_features(project, model, iteration):
     Returns:
         list[str]: List of feature names used for training/prediction.
     """
-    local_path = f'./features/feature_importances_RF_iter_0.csv'
+    local_path = f'./features/feature_importances_{model}_iter_{iteration}.csv'
     return pd.read_csv(local_path)['Feature'].tolist()
 
 
@@ -80,11 +85,11 @@ def predict_on_instance(raw_instance_df, scaler, model, feature_order):
     return y_pred, y_prob
 
 
-def load_scaler():
+def load_scaler(model_name):
     """
     Loads a previously saved MinMaxScaler from disk.
 
     Returns:
         MinMaxScaler: The trained and saved scaler.
     """
-    return load('./saved_models/scaler_RF.joblib')
+    return load(f'./saved_models/scaler_{model_name}.joblib')
